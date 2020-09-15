@@ -7,86 +7,101 @@ namespace Qowaiv
         public static string Parse(string str)
             => new State(str)
             .International()
-            .Digits()
+            .Other()
             .Parsed();
-
 
         private static State International(this State state)
         {
             var matches = false;
-            if(state.Slice.StartsWith("+"))
+            if (state.In.StartsWith("+"))
             {
-                state.Result.Add('+');
-                state.Slice = state.Slice.Next();
-               matches = true;
-            }
-            else if(state.Slice.StartsWith("00"))
-            {
-                state.Result.Add('+');
-                state.Slice = state.Slice.Next(2);
+                state.Out.Add('+');
+                state.In.Next();
                 matches = true;
             }
-            
-            if(matches)
+            else if (state.In.StartsWith("00"))
             {
-                while(char.IsDigit(state.Slice.Char))
+                state.Out.Add('+');
+                state.In.Next(2);
+                matches = true;
+            }
+
+            if (matches)
+            {
+                // international should be followed by a non-zero digit.
+                if ("123456789".IndexOf(state.In.First()) == CharBuffer.NotFound)
                 {
-                    state.Result.Add(state.Slice.Char);
-                    state.Slice = state.Slice.Next();
+                    return state.Invalid();
+                }
+
+                while (state.In.IsDigit())
+                {
+                    state.Out.Add(state.In.First());
+                    state.In.Next();
+                }
+                while (state.In.IsMarkup())
+                {
+                    state.In.Next();
+                }
+
+                // remove optional region prefix on international.
+                if (state.In.StartsWith("(0)") ||
+                    state.In.StartsWith("[0]"))
+                {
+                    state.In.Next(3);
                 }
             }
             return state;
         }
 
-        private static State Digits(this State state)
+        private static State Other(this State state)
         {
-            var slice = state.Slice;
-
-            while (!slice.IsLast())
+            while (state.In.NotEmpty())
             {
-                if (slice.IsDigit())
+                if (state.In.IsDigit())
                 {
-                    state.Add(slice);
+                    state.Out.Add(state.In.First());
                 }
-                else if(!slice.IsSpace())
+                else if (!state.In.IsMarkup())
                 {
                     return state.Invalid();
                 }
-
-                slice = slice.Next();
+                state.In.Next();
             }
             return state;
         }
 
         private ref struct State
         {
-            public Slice Slice;
-            public readonly CharBuffer Result;
+            public readonly CharBuffer In;
+            public readonly CharBuffer Out;
 
             public State(string str)
             {
-                Slice = str.Slice();
-                Result = new CharBuffer(str.Length);
-            }
-
-            public void Add(Slice slice)
-            {
-                Result.Add(slice.Char);
+                In = str.Buffer().Trim();
+                Out = CharBuffer.Empty(In.Length + 1);
             }
 
             public State Invalid()
             {
+                In.Clear();
+                Out.Clear();
                 return this;
             }
 
-            public string Parsed() => Result.Length == 0 ? null : Result.ToString();
+            public string Parsed() => Out.Length < 3 ? null : Out.ToString();
         }
 
-        private static bool IsDigit(this Slice slice)
-            => slice.Char >= '0' && slice.Char <= '9';
-        private static bool IsSpace(this Slice slice)
-            => "  -".IndexOf(slice.Char) != -1;
+        private static CharBuffer Next(this CharBuffer buffer, int next = 1)
+            => buffer.RemoveFromStart(next);
 
+        private static bool IsDigit(this CharBuffer buffer)
+            => buffer.NotEmpty()
+            && buffer.First() >= '0'
+            && buffer.First() <= '9';
 
+        private static bool IsMarkup(this CharBuffer buffer)
+            => buffer.NotEmpty()
+            && CharBuffer.IsMarkup(buffer.First());
     }
 }

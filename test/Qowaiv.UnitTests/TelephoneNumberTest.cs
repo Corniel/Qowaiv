@@ -115,7 +115,7 @@ namespace Qowaiv.UnitTests
         [Test]
         public void TryParse_StringValue_IsValid()
         {
-            string str = "string";
+            string str = "+31123456789";
             Assert.IsTrue(TelephoneNumber.TryParse(str, out var val));
             Assert.AreEqual(str, val.ToString());
         }
@@ -202,7 +202,7 @@ namespace Qowaiv.UnitTests
             ISerializable obj = TestStruct;
             var info = new SerializationInfo(typeof(TelephoneNumber), new FormatterConverter());
             obj.GetObjectData(info, default);
-            Assert.AreEqual((string)"s", info.GetValue("Value", typeof(string)));
+            Assert.AreEqual("+31123456789", info.GetValue("Value", typeof(string)));
         }
 
         [Test]
@@ -227,14 +227,14 @@ namespace Qowaiv.UnitTests
         public void XmlSerialize_TestStruct_AreEqual()
         {
             var act = SerializationTest.XmlSerialize(TestStruct);
-            var exp = "xmlstring";
+            var exp = "+31123456789";
             Assert.AreEqual(exp, act);
         }
 
         [Test]
         public void XmlDeserialize_XmlString_AreEqual()
         {
-            var act = SerializationTest.XmlDeserialize<TelephoneNumber>("xmlstring");
+            var act = SerializationTest.XmlDeserialize<TelephoneNumber>("+31 123456789");
             Assert.AreEqual(TestStruct, act);
         }
 
@@ -301,19 +301,12 @@ namespace Qowaiv.UnitTests
         }
 
         [TestCase("Invalid input")]
-        [TestCase("2017-06-11")]
-        [TestCase(long.MinValue)]
-        [TestCase(double.MinValue)]
         public void FromJson_Invalid_Throws(object json)
         {
             Assert.Catch<FormatException>(() => JsonTester.Read<TelephoneNumber>(json));
         }
 
-        [TestCase("yes", "yes")]
-        [TestCase("yes", true)]
-        [TestCase("yes", 1)]
-        [TestCase("no", 0.0)]
-        [TestCase("?", "unknown")]
+        [TestCase("+42123456798", "+42123456798")]
         public void FromJson(TelephoneNumber expected, object json)
         {
             var actual = JsonTester.Read<TelephoneNumber>(json);
@@ -324,7 +317,7 @@ namespace Qowaiv.UnitTests
         public void ToJson_TestStruct_JsonString()
         {
             var act = JsonTester.Write(TestStruct);
-            var exp = "JSON STRING";
+            var exp = "+31123456789";
             Assert.AreEqual(exp, act);
         }
 
@@ -348,29 +341,7 @@ namespace Qowaiv.UnitTests
         public void ToString_CustomFormatter_SupportsCustomFormatting()
         {
             var act = TestStruct.ToString("Unit Test Format", new UnitTestFormatProvider());
-            var exp = "Unit Test Formatter, value: 'Some Formatted Value', format: 'Unit Test Format'";
-            Assert.AreEqual(exp, act);
-        }
-
-        [TestCase("en-US", "", "ComplexPattern", "ComplexPattern")]
-        [TestCase("nl-BE", null, "1600,1", "1600,1")]
-        [TestCase("en-GB", null, "1600.1", "1600.1")]
-        [TestCase("nl-BE", "0000", "800", "0800")]
-        [TestCase("en-GB", "0000", "800", "0800")]
-        public void ToString_UsingCultureWithPattern(string culture, string format, string str, string expected)
-        {
-            using (new CultureInfoScope(culture))
-            {
-                var actual = TelephoneNumber.Parse(str).ToString(format);
-                Assert.AreEqual(expected, actual);
-            }
-        }
-
-        [Test]
-        public void ToString_FormatValueSpanishEcuador_AreEqual()
-        {
-            var act = TelephoneNumber.Parse("1700").ToString("00000.0", new CultureInfo("es-EC"));
-            var exp = "01700,0";
+            var exp = "Unit Test Formatter, value: '+31123456789', format: 'Unit Test Format'";
             Assert.AreEqual(exp, act);
         }
 
@@ -383,33 +354,33 @@ namespace Qowaiv.UnitTests
         [Test]
         public void DebuggerDisplay_DefaultValue_String()
         {
-            DebuggerDisplayAssert.HasResult("ComplexPattern", default(TelephoneNumber));
+            DebuggerDisplayAssert.HasResult("", default(TelephoneNumber));
         }
 
         [Test]
         public void DebuggerDisplay_Unknown_String()
         {
-            DebuggerDisplayAssert.HasResult("ComplexPattern", TelephoneNumber.Unknown);
+            DebuggerDisplayAssert.HasResult("?", TelephoneNumber.Unknown);
         }
 
         [Test]
         public void DebuggerDisplay_TestStruct_String()
         {
-            DebuggerDisplayAssert.HasResult("ComplexPattern", TestStruct);
+            DebuggerDisplayAssert.HasResult("+31123456789", TestStruct);
         }
 
         /// <summary>GetHash should not fail for TelephoneNumber.Empty.</summary>
         [Test]
         public void GetHash_Empty_Hash()
         {
-            Assert.AreEqual(-1, TelephoneNumber.Empty.GetHashCode());
+            Assert.AreEqual(0, TelephoneNumber.Empty.GetHashCode());
         }
 
         /// <summary>GetHash should not fail for the test struct.</summary>
         [Test]
         public void GetHash_TestStruct_Hash()
         {
-            Assert.AreEqual(-1, TestStruct.GetHashCode());
+            Assert.AreNotEqual(0, TestStruct.GetHashCode());
         }
 
         [Test]
@@ -421,8 +392,8 @@ namespace Qowaiv.UnitTests
         [Test]
         public void Equals_FormattedAndUnformatted_IsTrue()
         {
-            var l = TelephoneNumber.Parse("formatted", CultureInfo.InvariantCulture);
-            var r = TelephoneNumber.Parse("unformatted", CultureInfo.InvariantCulture);
+            var l = TelephoneNumber.Parse("0031 (0)123.456.789", CultureInfo.InvariantCulture);
+            var r = TelephoneNumber.Parse("+31123456789", CultureInfo.InvariantCulture);
             Assert.IsTrue(l.Equals(r));
         }
 
@@ -482,10 +453,10 @@ namespace Qowaiv.UnitTests
         [Test]
         public void OrderBy_TelephoneNumber_AreEqual()
         {
-            var item0 = TelephoneNumber.Parse("ComplexRegexPatternA");
-            var item1 = TelephoneNumber.Parse("ComplexRegexPatternB");
-            var item2 = TelephoneNumber.Parse("ComplexRegexPatternC");
-            var item3 = TelephoneNumber.Parse("ComplexRegexPatternD");
+            var item0 = TelephoneNumber.Parse("+31 465789");
+            var item1 = TelephoneNumber.Parse("+42 465789");
+            var item2 = TelephoneNumber.Parse("+42 965789");
+            var item3 = TelephoneNumber.Parse("012-465789");
             var inp = new List<TelephoneNumber> { TelephoneNumber.Empty, item3, item2, item0, item1, TelephoneNumber.Empty };
             var exp = new List<TelephoneNumber> { TelephoneNumber.Empty, TelephoneNumber.Empty, item0, item1, item2, item3 };
             var act = inp.OrderBy(item => item).ToList();
@@ -496,10 +467,10 @@ namespace Qowaiv.UnitTests
         [Test]
         public void OrderByDescending_TelephoneNumber_AreEqual()
         {
-            var item0 = TelephoneNumber.Parse("ComplexRegexPatternA");
-            var item1 = TelephoneNumber.Parse("ComplexRegexPatternB");
-            var item2 = TelephoneNumber.Parse("ComplexRegexPatternC");
-            var item3 = TelephoneNumber.Parse("ComplexRegexPatternD");
+            var item0 = TelephoneNumber.Parse("+31 465789");
+            var item1 = TelephoneNumber.Parse("+42 465789");
+            var item2 = TelephoneNumber.Parse("+42 965789");
+            var item3 = TelephoneNumber.Parse("012-465789");
             var inp = new List<TelephoneNumber> { TelephoneNumber.Empty, item3, item2, item0, item1, TelephoneNumber.Empty };
             var exp = new List<TelephoneNumber> { item3, item2, item1, item0, TelephoneNumber.Empty, TelephoneNumber.Empty };
             var act = inp.OrderByDescending(item => item).ToList();
@@ -556,7 +527,7 @@ namespace Qowaiv.UnitTests
         [Test]
         public void Length_TestStruct_IntValue()
         {
-            var exp = -10;
+            var exp = 12;
             var act = TestStruct.Length;
             Assert.AreEqual(exp, act);
         }
@@ -629,13 +600,15 @@ namespace Qowaiv.UnitTests
 
         [TestCase(null)]
         [TestCase("")]
-        [TestCase("Complex")]
+        [TestCase("(0)1324657")]
+        [TestCase("23")]
         public void IsInvalid_String(string str)
         {
             Assert.IsFalse(TelephoneNumber.IsValid(str));
         }
 
-        [TestCase("ComplexPattern")]
+        [TestCase("112")]
+        [TestCase("015-2624424")]
         public void IsValid_String(string str)
         {
             Assert.IsTrue(TelephoneNumber.IsValid(str));

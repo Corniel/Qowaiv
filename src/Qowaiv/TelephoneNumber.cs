@@ -65,7 +65,7 @@ namespace Qowaiv
         
         /// <summary>Returns a <see cref = "string "/> that represents the telephone number for DEBUG purposes.</summary>
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private string DebuggerDisplay => ToString("F", CultureInfo.InvariantCulture);
+        private string DebuggerDisplay => ToString(CultureInfo.InvariantCulture);
 
         /// <summary>Returns a formatted <see cref = "string "/> that represents the telephone number.</summary>
         /// <param name = "format">
@@ -81,7 +81,7 @@ namespace Qowaiv
                 return formatted;
             }
 
-            return m_Value;
+            return m_Value ?? string.Empty;
         }
 
         /// <summary>Gets an XML string representation of the telephone number.</summary>
