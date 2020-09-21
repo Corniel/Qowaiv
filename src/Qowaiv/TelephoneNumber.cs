@@ -9,11 +9,13 @@
 namespace Qowaiv
 {
     using Qowaiv.Formatting;
+    using Qowaiv.Globalization;
     using Qowaiv.Json;
     using System;
     using System.ComponentModel;
     using System.Diagnostics;
     using System.Globalization;
+    using System.Linq;
     using System.Runtime.Serialization;
     using System.Xml.Serialization;
 
@@ -62,7 +64,24 @@ namespace Qowaiv
             }
         }
 
-        
+        /// <summary>Gets the country linked to the international telephone number.</summary>
+        /// <remarks>
+        /// Returns <see cref="Country.Empty"/> for numbers that are not international
+        /// and <see cref="Country.Unknown"/> if no country could be linked.
+        /// </remarks>
+        public Country Country
+        {
+            get
+            {
+                var str = m_Value;
+                return Type == TelephoneNumberType.International
+                    ? Country.All
+                        .OrderByDescending(c => c.CallingCode.Length)
+                        .FirstOrDefault(c => str.StartsWith(c.CallingCode, StringComparison.InvariantCulture))
+                    : Country.Empty;
+            }
+        }
+
         /// <summary>Returns a <see cref = "string "/> that represents the telephone number for DEBUG purposes.</summary>
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private string DebuggerDisplay => ToString(CultureInfo.InvariantCulture);
