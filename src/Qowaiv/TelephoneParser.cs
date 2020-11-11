@@ -29,7 +29,7 @@ namespace Qowaiv
             if (matches)
             {
                 // international should be followed by a non-zero digit.
-                if ("123456789".IndexOf(state.In.First()) == CharBuffer.NotFound)
+                if (!state.In.IsDigit() || state.In.First() == '0')
                 {
                     return state.Invalid();
                 }

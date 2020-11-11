@@ -23,7 +23,7 @@ namespace Qowaiv
     [DebuggerDisplay("{DebuggerDisplay}")]
     [Serializable]
     [SingleValueObject(SingleValueStaticOptions.All, typeof(string))]
-    [OpenApiDataType(description: "telephone number", type: "TelephoneNumber", format: "TelephoneNumber")]
+    [OpenApiDataType(description: "telephone number", type: "string", format: "telephone-number", pattern: "\\+?[0-9]{3,}")]
     [TypeConverter(typeof(Conversion.TelephoneNumberTypeConverter))]
     public partial struct TelephoneNumber : ISerializable, IXmlSerializable, IFormattable, IEquatable<TelephoneNumber>, IComparable, IComparable<TelephoneNumber>
     {

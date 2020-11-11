@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Qowaiv
+﻿namespace Qowaiv
 {
     public enum TelephoneNumberType
     {
-        None,
-        Local,
-        Regional,
-        International,
-        Unknown,
+        None = 0,
+        Local = 1,
+        Regional = 2,
+        International = 3,
+        Unknown = 9,
     }
 }
