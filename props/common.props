@@ -9,11 +9,10 @@
     <Company>Qowaiv community</Company>
     <Copyright>Copyright © Qowaiv community 2013-current</Copyright>
     <LangVersion>latest</LangVersion>
-    <CodeAnalysisRuleSet>..\..\Qowaiv.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SonarAnalyzer.CSharp" Version="8.6.0.16497">
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="8.14.0.22654">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
